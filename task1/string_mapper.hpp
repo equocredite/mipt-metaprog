@@ -4,6 +4,7 @@
 #include <type_traits>
 #include <optional>
 #include <memory>
+#include <typeinfo>
 
 using std::operator""sv;
 
@@ -22,12 +23,13 @@ struct ClassMapper<Base, Target> {
     }
 };
 
-template<class Base, class Target, Target target, class DynamicType, class... Mappings>
-struct ClassMapper<Base, Target, Mapping<DynamicType, target>, Mappings...> {
+template<class Base, class Target, Target target, class From, class... Mappings>
+struct ClassMapper<Base, Target, Mapping<From, target>, Mappings...> {
     static std::optional<Target> map(const Base& object) {
-        if (typeid(object) == typeid(std::declval<DynamicType>())) {
+        try {
+            dynamic_cast<const From&>(object);
             return std::make_optional(target);
-        } else {
+        } catch(const std::bad_cast& e) {
             return ClassMapper<Base, Target, Mappings...>::map(object);
         }
     }
@@ -53,20 +55,3 @@ struct String {
 constexpr String<256> operator "" _cstr(const char* string, size_t length) {
     return String<256>(string, length);
 }
-
-// static_assert(std::is_literal_type_v<String<256>>);
-// static_assert(std::is_same_v<String<256>, decltype("smth"_cstr)>);
-// static_assert("some text"_cstr == "some text"sv);
-// static_assert(String<128>{"some text", 4} == "some"sv);
-//
-// class Animal {
-// public:
-//     virtual ~Animal() = default;
-// };
-//
-// class Cat : public Animal {};
-// class Cow : public Animal {};
-// class Dog : public Animal {};
-// class StBernard : public Dog {};
-// class Horse : public Animal {};
-// class RaceHorse : public Horse {};
