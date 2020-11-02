@@ -24,6 +24,7 @@ struct ClassMapper<Base, Target> {
 };
 
 template<class Base, class Target, Target target, class From, class... Mappings>
+    requires std::is_base_of_v<Base, From>
 struct ClassMapper<Base, Target, Mapping<From, target>, Mappings...> {
     static std::optional<Target> map(const Base& object) {
         try {
