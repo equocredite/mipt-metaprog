@@ -18,7 +18,7 @@ struct ClassMapper {
 
 template<class Base, class Target>
 struct ClassMapper<Base, Target> {
-    static std::optional<Target> map(const Base& object) {
+    static std::optional<Target> map(const Base&) {
         return std::nullopt;
     }
 };
@@ -39,9 +39,7 @@ template<size_t max_length>
 struct String {
     constexpr String(const char* string, size_t length)
     : length(length) {
-        for (size_t i = 0; i < length; ++i) {
-            this->string[i] = string[i];
-        }
+        std::copy(string, string + length, this->string);
     }
 
     constexpr operator std::string_view () const {
