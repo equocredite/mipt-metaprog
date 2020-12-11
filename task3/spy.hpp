@@ -147,8 +147,26 @@ public:
     }
 
     template <std::invocable<unsigned int> Logger>
-        requires (std::copyable<T> && std::copyable<Logger>) || (!std::copyable<T> && std::move_constructible<Logger>)
+        requires (!std::copyable<T> || std::copyable<Logger>) && (!std::movable<T> || std::movable<Logger>)
     void setLogger(Logger&& logger) {
         logger_ = std::forward<Logger>(logger);
     }
+
+    template <std::invocable<unsigned int> Logger>
+        requires (!std::copyable<T> || std::copyable<Logger>) && (!std::movable<T> || std::movable<Logger>)
+    void setLogger(Logger& logger) {
+        logger_ = logger;
+    }
+};
+
+struct MoveOnly {
+    MoveOnly() = default;
+
+    MoveOnly(MoveOnly&&) = default;
+    MoveOnly& operator =(MoveOnly&&) = default;
+
+    MoveOnly(const MoveOnly&) = delete;
+    MoveOnly& operator =(const MoveOnly&) = delete;
+
+    ~MoveOnly() noexcept = default;
 };
