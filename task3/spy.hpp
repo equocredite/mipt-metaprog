@@ -128,9 +128,7 @@ public:
     explicit Spy(T&& obj) : obj_(std::move(obj))  {
     }
 
-    template<typename OtherSpy>
-        requires std::is_same_v<Spy<T>, OtherSpy> && std::equality_comparable<T>
-    bool operator == (const OtherSpy& other) const {
+    bool operator == (const Spy<T>& other) const requires std::equality_comparable<T> {
         return obj_ == other.obj_;
     }
 
@@ -157,16 +155,4 @@ public:
     void setLogger(Logger& logger) {
         logger_ = logger;
     }
-};
-
-struct MoveOnly {
-    MoveOnly() = default;
-
-    MoveOnly(MoveOnly&&) = default;
-    MoveOnly& operator =(MoveOnly&&) = default;
-
-    MoveOnly(const MoveOnly&) = delete;
-    MoveOnly& operator =(const MoveOnly&) = delete;
-
-    ~MoveOnly() noexcept = default;
 };
